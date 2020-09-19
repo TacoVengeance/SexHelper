@@ -4,15 +4,16 @@ using System.Collections;
 using System.Collections.Generic;
 using SimpleJSON;
 using System.Linq;
+
 // Todo:
-// register bools 
+// register bools
 // add warning about selecting male / female
 // try and sync hip movements
 // Add recommended physics for hip thrust
 // Fix not remembering female
+
 public class SexHelper : MVRScript
 {
-
     // Bodies
     private Atom _maleAtom;
     private FreeControllerV3 _penisBase;
@@ -37,7 +38,6 @@ public class SexHelper : MVRScript
     private Rigidbody _pelvis;
 
     // UI and settings
-
     private JSONStorableFloat _durationJSON;
     private JSONStorableFloat _durationRangeJSON;
     private JSONStorableFloat _durationUpdateIntervalJSON;
@@ -87,7 +87,6 @@ public class SexHelper : MVRScript
     private Vector3 _hipResetPosition;
     private Quaternion _hipResetRotation;
 
-
     public override void Init()
     {
         try
@@ -109,10 +108,11 @@ public class SexHelper : MVRScript
             {
                 storeType = JSONStorableStringChooser.StoreType.Full
             };
+
             // Try and load existing value
             if (_maleAtomJSON.val != null)
             {
-               SyncMaleAtom(_maleAtomJSON.val);
+                SyncMaleAtom(_maleAtomJSON.val);
             }
             RegisterStringChooser(_maleAtomJSON);
 
@@ -120,6 +120,7 @@ public class SexHelper : MVRScript
             {
                 storeType = JSONStorableStringChooser.StoreType.Full
             };
+
             if (_femaleAtomJSON.val != null)
             {
                 SyncFemaleAtom(_femaleAtomJSON.val);
@@ -132,7 +133,6 @@ public class SexHelper : MVRScript
 
             text = CreateTextField(new JSONStorableString("text", "<b>\n Select Female</b>"), true);
             text.height = 50f;
-
 
             // Male Atom selector popup
             RegisterStringChooser(_maleAtomJSON);
@@ -202,13 +202,10 @@ public class SexHelper : MVRScript
             text = CreateTextField(new JSONStorableString("text", "\nThe type of easing applied to the thrust motion"), true);
             text.height = 100;
 
-
             text = CreateTextField(new JSONStorableString("text", "<b>\nPositioning</b>"), true);
             text.height = 100;
             spacer = CreateSpacer();
             spacer.height = 100f;
-
-
 
             _penisPositionOneJSON = new JSONStorableFloat("Penis In", 0f, -5f, 5f, false);
             RegisterFloat(_penisPositionOneJSON);
@@ -252,7 +249,6 @@ public class SexHelper : MVRScript
             text = CreateTextField(new JSONStorableString("text", ""), true);
             text.height = 120;
 
-
             text = CreateTextField(new JSONStorableString("text", "<b>\nTweaks</b>"),true);
             text.height = 100;
             spacer = CreateSpacer();
@@ -277,16 +273,11 @@ public class SexHelper : MVRScript
             text = CreateTextField(new JSONStorableString("text", "\nTurns off male pelvis\nTurns on female hip\nTurns off female pelvis, abdomen and abdomen 2"), true);
             text.height = 240;
 
-
             text = CreateTextField(new JSONStorableString("text", "<b>\nTips</b>"), true);
             text.height = 100;
 
             text = CreateTextField(new JSONStorableString("text", "\nThe best way to improve motion is usually to edit physics settings for both characters. The key values to tweak are:\nHold Position Spring\nHold Position Max Force\nHold Rotation Spring\nHold Rotation Max Force. \n\nKey nodes to tweak are:\nAny active nodes\nPenis Base\nHips\nPelvis\nAbdomen and Abdomen2\nThighs\nFeet\n\nIf you are getting physics explosions:\nReduce 'Penis In' value\nReduce Hold Position Strength on Penis Base and Female Hip\n\nIt will still explode eventually :("),true);
             text.height = 1000;
-
-
-
-
         }
         catch (Exception e)
         {
@@ -311,65 +302,64 @@ public class SexHelper : MVRScript
     {
         try
         {
-            if(_maleAtom != null && _femaleAtom != null){
-         
-       
-            if (_maleThrustEnabledJSON.val || _femaleThrustEnabledJSON.val)
+            if (_maleAtom != null && _femaleAtom != null)
             {
-                // Update Timers;
-                _durationUpdateTimer += Time.fixedDeltaTime;
-                _lerpTimer += Time.fixedDeltaTime;
-                if (_lerpTimer > _lerpTime)
+                if (_maleThrustEnabledJSON.val || _femaleThrustEnabledJSON.val)
                 {
-                    _lerpTimer = _lerpTime;
+                    // Update Timers;
+                    _durationUpdateTimer += Time.fixedDeltaTime;
+                    _lerpTimer += Time.fixedDeltaTime;
+
+                    if (_lerpTimer > _lerpTime)
+                    {
+                        _lerpTimer = _lerpTime;
+                    }
+
+                    // Update Targets
+                    _penisTarget = (_vaginaTrigger.transform.position + (_deeperVaginaTrigger.transform.position - _vaginaTrigger.transform.position) * _penisPosition);
+                    _hipTarget = (_penisBase.transform.position + (_penisBase.transform.forward) * (_hipPosition / 10)); // divide by 10 to make the hip sliders more reasonable
+                    // Add penis target offset
+                    _penisPositionOffset.x = 0;
+                    _penisPositionOffset.y = _penisPositionJSON.val;
+                    _penisPositionOffset.z = 0;
+                    _penisTarget += _penisPositionOffset;
+
                 }
 
-                // Update Targets
-                _penisTarget = (_vaginaTrigger.transform.position + (_deeperVaginaTrigger.transform.position - _vaginaTrigger.transform.position) * _penisPosition);
-                _hipTarget = (_penisBase.transform.position + (_penisBase.transform.forward) * (_hipPosition / 10)); // divide by 10 to make the hip sliders more reasonable
-                // Add penis target offset
-                _penisPositionOffset.x = 0;
-                _penisPositionOffset.y = _penisPositionJSON.val;
-                _penisPositionOffset.z = 0;
-                _penisTarget += _penisPositionOffset;
+                // update penis position
+                if (_maleThrustEnabledJSON.val)
+                {
+                    _perc = _lerpTimer / _lerpTime;
+                    // add easing
+                    _perc = easing(_perc);
+                    _penisCurrent = Vector3.Lerp(_penisStart, _penisTarget, _perc);
+                    _penisBase.transform.position = _penisCurrent;
+                }
 
-            }
+                if (_penisCurrent == _penisTarget && _maleThrustEnabledJSON.val)
+                {
+                    NewThrust("penis");
+                }
 
-            // update penis position 
-            if (_maleThrustEnabledJSON.val)
-            {
-                _perc = _lerpTimer / _lerpTime;
-                // add easing
-                _perc = easing(_perc);
-                _penisCurrent = Vector3.Lerp(_penisStart, _penisTarget, _perc);
-                _penisBase.transform.position = _penisCurrent;
-            }
-            if (_penisCurrent == _penisTarget && _maleThrustEnabledJSON.val)
-            {
-                NewThrust("penis");
-            }
+                // update hip position
+                if (_femaleThrustEnabledJSON.val)
+                {
+                    _perc = _lerpTimer / _lerpTime;
+                    _perc = easing(_perc);
+                    _hipCurrent = Vector3.Lerp(_hipStart, _hipTarget, _perc);
+                    _hipControl.transform.position = _hipCurrent;
+                }
 
+                if (_hipCurrent == _hipTarget && _femaleThrustEnabledJSON.val)
+                {
+                    NewThrust("hip");
+                }
 
-            // update hip position 
-            if (_femaleThrustEnabledJSON.val)
-            {
-                _perc = _lerpTimer / _lerpTime;
-                _perc = easing(_perc);
-                _hipCurrent = Vector3.Lerp(_hipStart, _hipTarget, _perc);
-                _hipControl.transform.position = _hipCurrent;
+                if (_maleAlignEnabledJSON.val)
+                {
+                    UpdateRotations();
+                }
             }
-            if (_hipCurrent == _hipTarget && _femaleThrustEnabledJSON.val)
-            {
-                NewThrust("hip");
-            }
-
-             if (_maleAlignEnabledJSON.val)
-            {
-                UpdateRotations();
-            }
-            }
-
-
         }
         catch (Exception e)
         {
@@ -383,12 +373,12 @@ public class SexHelper : MVRScript
         {
             SetNewPenisTarget();
         }
+
         if (type == "hip")
         {
             SetNewHipTarget();
         }
     }
-
 
     private void SetNewPenisTarget()
     {
@@ -399,8 +389,6 @@ public class SexHelper : MVRScript
         {
             _penisPosition = _penisPositionTwoJSON.val;
             _penisIsPositionOne = false;
-
-
         }
         else
         {
@@ -446,18 +434,21 @@ public class SexHelper : MVRScript
         }
     }
 
-private void StartMaleAlign(bool isChecked){
-    if (isChecked){
-        _penisBase.currentRotationState = FreeControllerV3.RotationState.On;
-        _penisMid.currentRotationState = FreeControllerV3.RotationState.On;
-        _penisTip.currentRotationState = FreeControllerV3.RotationState.On;
+    private void StartMaleAlign(bool isChecked)
+    {
+        if (isChecked)
+        {
+            _penisBase.currentRotationState = FreeControllerV3.RotationState.On;
+            _penisMid.currentRotationState = FreeControllerV3.RotationState.On;
+            _penisTip.currentRotationState = FreeControllerV3.RotationState.On;
+        }
+        else
+        {
+            _penisBase.currentRotationState = FreeControllerV3.RotationState.Off;
+            _penisMid.currentRotationState = FreeControllerV3.RotationState.Off;
+            _penisTip.currentRotationState = FreeControllerV3.RotationState.Off;
+        }
     }
-    else{
-        _penisBase.currentRotationState = FreeControllerV3.RotationState.Off;
-        _penisMid.currentRotationState = FreeControllerV3.RotationState.Off;
-        _penisTip.currentRotationState = FreeControllerV3.RotationState.Off;
-    }
-}
     private void StartMaleThrust(bool isChecked)
     {
         if (isChecked)
@@ -482,12 +473,10 @@ private void StartMaleAlign(bool isChecked){
             _lerpTime = _durationJSON.val;
             _hipStart = _hipControl.transform.position;
         }
-        else
-        {
-        }
     }
 
-    private void ApplyPhysics(){
+    private void ApplyPhysics()
+    {
         _penisBase.RBHoldPositionSpring = 10000;
         _maleHipControl.RBHoldPositionSpring = 200;
         _malePelvisControl.RBHoldPositionSpring = 200;
@@ -495,7 +484,8 @@ private void StartMaleAlign(bool isChecked){
         _hipControl.RBHoldRotationSpring = 10000;
     }
 
-    private void ApplyControls(){
+    private void ApplyControls()
+    {
         _hipControl.currentPositionState = FreeControllerV3.PositionState.On;
         _hipControl.currentRotationState = FreeControllerV3.RotationState.On;
         _pelvisControl.currentPositionState = FreeControllerV3.PositionState.Off;
@@ -503,7 +493,7 @@ private void StartMaleAlign(bool isChecked){
         _abdomenControl.currentPositionState = FreeControllerV3.PositionState.Off;
         _abdomenControl.currentRotationState = FreeControllerV3.RotationState.Off;
         _abdomen2Control.currentPositionState = FreeControllerV3.PositionState.Off;
-       _abdomen2Control.currentRotationState = FreeControllerV3.RotationState.Off;
+        _abdomen2Control.currentRotationState = FreeControllerV3.RotationState.Off;
         _malePelvisControl.currentPositionState = FreeControllerV3.PositionState.Off;
         _malePelvisControl.currentRotationState = FreeControllerV3.RotationState.Off;
     }
@@ -548,9 +538,11 @@ private void StartMaleAlign(bool isChecked){
         _deeperVaginaTrigger = _femaleAtom.rigidbodies.First(rb => rb.name == "DeeperVaginaTrigger");
         _pelvis = _femaleAtom.rigidbodies.First(rb => rb.name == "pelvis");
     }
+
     protected void SyncMaleAtom(string atomUID)
     {
         _maleAtom = SuperController.singleton.GetAtomByUid(atomUID);
+
         try
         {
             _penisBase = _maleAtom.freeControllers.First(fc => fc.name == "penisBaseControl");
@@ -579,7 +571,6 @@ private void StartMaleAlign(bool isChecked){
         _maleAtomJSON.choices = SuperController.singleton.GetAtoms().Where(atom => atom.GetStorableByID("geometry") != null).Select(atom => atom.name).ToList();
     }
 
-
     public void OnDisable()
     {
         try
@@ -605,6 +596,8 @@ private void StartMaleAlign(bool isChecked){
     }
 }
 
+#region Easings code
+
 public class Easing
 {
 
@@ -614,40 +607,39 @@ public class Easing
     public static void SetEasingChoices()
     {
         easingChoices = new Dictionary<string, Func<float, float>>()
-            {
-                {"Linear", f => Easing.Linear(f)},
-                {"Quadratic In", f => Easing.Quadratic.In(f)},
-                {"Quadratic Out", f => Easing.Quadratic.Out(f)},
-                {"Quadratic InOut", f => Easing.Quadratic.InOut(f)},
-                {"Cubic In", f => Easing.Cubic.In(f)},
-                {"Cubic Out", f => Easing.Cubic.Out(f)},
-                {"Cubic InOut", f => Easing.Cubic.InOut(f)},
-                {"Quartic In", f => Easing.Quartic.In(f)},
-                {"Quartic Out", f => Easing.Quartic.Out(f)},
-                {"Quartic InOut", f => Easing.Quartic.InOut(f)},
-                {"Quintic In", f => Easing.Quintic.In(f)},
-                {"Quintic Out", f => Easing.Quintic.Out(f)},
-                {"Quintic InOut", f => Easing.Quintic.InOut(f)},
-                {"Sinusoidal In", f => Easing.Sinusoidal.In(f)},
-                {"Sinusoidal Out", f => Easing.Sinusoidal.Out(f)},
-                {"Sinusoidal InOut", f => Easing.Sinusoidal.InOut(f)},
-                {"Exponential In", f => Easing.Exponential.In(f)},
-                {"Exponential Out", f => Easing.Exponential.Out(f)},
-                {"Exponential InOut", f => Easing.Exponential.InOut(f)},
-                {"Circular In", f => Easing.Circular.In(f)},
-                {"Circular Out", f => Easing.Circular.Out(f)},
-                {"Circular InOut", f => Easing.Circular.InOut(f)},
-                {"Elastic In", f => Easing.Elastic.In(f)},
-                {"Elastic Out", f => Easing.Elastic.Out(f)},
-                {"Elastic InOut", f => Easing.Elastic.InOut(f)},
-                {"Back In", f => Easing.Back.In(f)},
-                {"Back Out", f => Easing.Back.Out(f)},
-                {"Back InOut", f => Easing.Back.InOut(f)},
-                {"Bounce In", f => Easing.Bounce.In(f)},
-                {"Bounce Out", f => Easing.Bounce.Out(f)},
-                {"Bounce InOut", f => Easing.Bounce.InOut(f)},
-
-            };
+        {
+            {"Linear", f => Easing.Linear(f)},
+            {"Quadratic In", f => Easing.Quadratic.In(f)},
+            {"Quadratic Out", f => Easing.Quadratic.Out(f)},
+            {"Quadratic InOut", f => Easing.Quadratic.InOut(f)},
+            {"Cubic In", f => Easing.Cubic.In(f)},
+            {"Cubic Out", f => Easing.Cubic.Out(f)},
+            {"Cubic InOut", f => Easing.Cubic.InOut(f)},
+            {"Quartic In", f => Easing.Quartic.In(f)},
+            {"Quartic Out", f => Easing.Quartic.Out(f)},
+            {"Quartic InOut", f => Easing.Quartic.InOut(f)},
+            {"Quintic In", f => Easing.Quintic.In(f)},
+            {"Quintic Out", f => Easing.Quintic.Out(f)},
+            {"Quintic InOut", f => Easing.Quintic.InOut(f)},
+            {"Sinusoidal In", f => Easing.Sinusoidal.In(f)},
+            {"Sinusoidal Out", f => Easing.Sinusoidal.Out(f)},
+            {"Sinusoidal InOut", f => Easing.Sinusoidal.InOut(f)},
+            {"Exponential In", f => Easing.Exponential.In(f)},
+            {"Exponential Out", f => Easing.Exponential.Out(f)},
+            {"Exponential InOut", f => Easing.Exponential.InOut(f)},
+            {"Circular In", f => Easing.Circular.In(f)},
+            {"Circular Out", f => Easing.Circular.Out(f)},
+            {"Circular InOut", f => Easing.Circular.InOut(f)},
+            {"Elastic In", f => Easing.Elastic.In(f)},
+            {"Elastic Out", f => Easing.Elastic.Out(f)},
+            {"Elastic InOut", f => Easing.Elastic.InOut(f)},
+            {"Back In", f => Easing.Back.In(f)},
+            {"Back Out", f => Easing.Back.Out(f)},
+            {"Back InOut", f => Easing.Back.InOut(f)},
+            {"Bounce In", f => Easing.Bounce.In(f)},
+            {"Bounce Out", f => Easing.Bounce.Out(f)},
+            {"Bounce InOut", f => Easing.Bounce.InOut(f)},
+        };
 
         easingChoicesList = new List<string>();
         foreach (var easingChoice in easingChoices)
@@ -655,7 +647,6 @@ public class Easing
             easingChoicesList.Add(easingChoice.Key);
         }
     }
-
 
     public static float Linear(float k)
     {
@@ -875,4 +866,6 @@ public class Easing
         }
     };
 }
+
+#endregion
 
