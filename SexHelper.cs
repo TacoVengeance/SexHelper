@@ -137,14 +137,14 @@ public class SexHelper : MVRScript
             RegisterStringChooser(_maleAtomJSON);
             SyncAtomChoices();
             UIDynamicPopup dp = CreateScrollablePopup(_maleAtomJSON, false);
-            dp.popupPanelHeight = 1100f;
+            dp.popupPanelHeight = 500f;
             dp.popup.onOpenPopupHandlers += SyncAtomChoices;
 
             // Female Atom selector popup
             RegisterStringChooser(_femaleAtomJSON);
             SyncAtomChoices();
             dp = CreateScrollablePopup(_femaleAtomJSON, false);
-            dp.popupPanelHeight = 1100f;
+            dp.popupPanelHeight = 500f;
             dp.popup.onOpenPopupHandlers += SyncAtomChoices;
 
             // Toggles
@@ -562,12 +562,31 @@ public class SexHelper : MVRScript
 
     protected void SyncAtomChoices()
     {
-        List<string> atomChoices = new List<string>
-        {
-            "None"
-        };
-        _femaleAtomJSON.choices = SuperController.singleton.GetAtoms().Where(atom => atom.GetStorableByID("geometry") != null).Select(atom => atom.name).ToList();
-        _maleAtomJSON.choices = SuperController.singleton.GetAtoms().Where(atom => atom.GetStorableByID("geometry") != null).Select(atom => atom.name).ToList();
+        //NOTE: upsteam allowed selecting male or female for both roles, but penis thrust doesn't work for Females
+        //TODO: see what can be done for futa/gay animations
+
+        _femaleAtomJSON.choices = FemaleAtoms.Select(a => a.name).ToList();
+        _maleAtomJSON.choices =   MaleAtoms.Select(a => a.name).ToList();
+    }
+
+    private IEnumerable<Atom> PersonAtoms
+    {
+        get { return SuperController.singleton.GetAtoms().Where(a => a.type == "Person"); }
+    }
+
+    private IEnumerable<Atom> MaleAtoms
+    {
+        get { return PersonAtoms.Where(a => IsAtomMale(a)); }
+    }
+
+    private IEnumerable<Atom> FemaleAtoms
+    {
+        get { return PersonAtoms.Where(a => ! IsAtomMale(a)); }
+    }
+
+    private bool IsAtomMale(Atom atom)
+    {
+        return atom.GetComponentInChildren<DAZCharacter>().isMale;
     }
 
     public void OnDisable()
