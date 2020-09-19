@@ -56,7 +56,7 @@ public class SexHelper : MVRScript
     private JSONStorableFloat _hipRangeJSON;
     private JSONStorableBool _femaleThrustEnabledJSON;
 
-    public JSONStorableStringChooser easingJSON;
+    public JSONStorableStringChooser _easingJSON;
     public Func<float, float> easing;
 
     // Variables
@@ -95,13 +95,13 @@ public class SexHelper : MVRScript
 
             // Easing Setup
             Easing.SetEasingChoices();
-            easingJSON = new JSONStorableStringChooser("Easing Choice", Easing.easingChoicesList, "Linear", "Select Motion Easing", SetEasing)
+            _easingJSON = new JSONStorableStringChooser("Easing Choice", Easing.easingChoicesList, "Linear", "Select Motion Easing", SetEasing)
             {
                 storeType = JSONStorableParam.StoreType.Full,
                 val = "Linear"
             };
             SetEasing("Linear");
-            RegisterStringChooser(easingJSON);
+            RegisterStringChooser(_easingJSON);
 
             //Atom choices setup
             _maleAtomJSON = new JSONStorableStringChooser("MaleAtom", null, null, "Male", SyncMaleAtom)
@@ -198,7 +198,7 @@ public class SexHelper : MVRScript
             text = CreateTextField(new JSONStorableString("text", "\nThe amount of time between the selection of each new thrust time"), true);
             text.height = 120;
 
-            CreateScrollablePopup(easingJSON).popupPanelHeight = 1100f;
+            CreateScrollablePopup(_easingJSON).popupPanelHeight = 1100f;
             text = CreateTextField(new JSONStorableString("text", "\nThe type of easing applied to the thrust motion"), true);
             text.height = 100;
 
