@@ -6,7 +6,6 @@ using SimpleJSON;
 using System.Linq;
 
 // Todo:
-// register bools
 // add warning about selecting male / female
 // try and sync hip movements
 // Add recommended physics for hip thrust
@@ -157,18 +156,18 @@ public class SexHelper : MVRScript
             text.height = 120;
             _maleAlignEnabledJSON = new JSONStorableBool("Enable Penis Alignment", false, StartMaleAlign);
             CreateToggle(_maleAlignEnabledJSON, false);
-            //RegisterBool(_maleAlignEnabledJSON);
-            //_maleAlignEnabledJSON.storeType = JSONStorableParam.StoreType.Full;
+            RegisterBool(_maleAlignEnabledJSON);
+            _maleAlignEnabledJSON.storeType = JSONStorableParam.StoreType.Full;
 
             _maleThrustEnabledJSON = new JSONStorableBool("Enable Penis Thrust", false, StartMaleThrust);
             CreateToggle(_maleThrustEnabledJSON, false);
-            //RegisterBool(_maleThrustEnabledJSON);
-            //_maleThrustEnabledJSON.storeType = JSONStorableParam.StoreType.Full;
+            RegisterBool(_maleThrustEnabledJSON);
+            _maleThrustEnabledJSON.storeType = JSONStorableParam.StoreType.Full;
 
             _femaleThrustEnabledJSON = new JSONStorableBool("Enable Hip Thrust", false, StartFemaleThrust);
             CreateToggle(_femaleThrustEnabledJSON, false);
-            //RegisterBool(_femaleThrustEnabledJSON);
-            //_femaleThrustEnabledJSON.storeType = JSONStorableParam.StoreType.Full;
+            RegisterBool(_femaleThrustEnabledJSON);
+            _femaleThrustEnabledJSON.storeType = JSONStorableParam.StoreType.Full;
 
             // Duration sliders
             text = CreateTextField(new JSONStorableString("text", "<b>\nTimings</b>"),true);
