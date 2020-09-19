@@ -284,18 +284,6 @@ public class SexHelper : MVRScript
         }
     }
 
-    public void OnEnable()
-    {
-        try
-        {
-            SuperController.LogMessage($"{nameof(SexHelper)} enabled");
-        }
-        catch (Exception e)
-        {
-            SuperController.LogError($"{nameof(SexHelper)}.{nameof(Init)}: {e}");
-        }
-    }
-
     // FixedUpdate is called with each physics simulation frame by Unity
     void FixedUpdate()
     {
@@ -587,30 +575,6 @@ public class SexHelper : MVRScript
     private bool IsAtomMale(Atom atom)
     {
         return atom.GetComponentInChildren<DAZCharacter>().isMale;
-    }
-
-    public void OnDisable()
-    {
-        try
-        {
-            SuperController.LogMessage($"{nameof(SexHelper)} disabled");
-        }
-        catch (Exception e)
-        {
-            SuperController.LogError($"{nameof(SexHelper)}.{nameof(Init)}: {e}");
-        }
-    }
-
-    public void OnDestroy()
-    {
-        try
-        {
-            SuperController.LogMessage($"{nameof(SexHelper)} destroyed");
-        }
-        catch (Exception e)
-        {
-            SuperController.LogError($"{nameof(SexHelper)}.{nameof(Init)}: {e}");
-        }
     }
 }
 
