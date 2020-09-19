@@ -350,7 +350,7 @@ public class SexHelper : MVRScript
         }
         catch (Exception e)
         {
-            SuperController.LogError("Exception caught: " + e);
+            SuperController.LogError($"{nameof(SexHelper)}.{nameof(FixedUpdate)}: {e}");
         }
     }
 
@@ -530,22 +530,22 @@ public class SexHelper : MVRScript
     {
         _maleAtom = SuperController.singleton.GetAtomByUid(atomUID);
 
-        try
+        _penisBase = _maleAtom.freeControllers.FirstOrDefault(fc => fc.name == "penisBaseControl");
+
+        if (_penisBase == null)
         {
-            _penisBase = _maleAtom.freeControllers.First(fc => fc.name == "penisBaseControl");
-            _penisMid = _maleAtom.freeControllers.First(fc => fc.name == "penisMidControl");
-            _penisTip = _maleAtom.freeControllers.First(fc => fc.name == "penisTipControl");
-            _malePelvisControl = _maleAtom.freeControllers.First(fc => fc.name == "pelvisControl");
-            _malePelvis = _maleAtom.rigidbodies.First(rb => rb.name == "pelvis");
-            _maleHipControl = _maleAtom.freeControllers.First(fc => fc.name == "hipControl");
-            _gen1 = _maleAtom.rigidbodies.First(rb => rb.name == "Gen1");
-            _gen2 = _maleAtom.rigidbodies.First(rb => rb.name == "Gen2");
-            _gen3 = _maleAtom.rigidbodies.First(rb => rb.name == "Gen3");
+            SuperController.LogError("SexHelper error: this character doesn't have a penis");
+            return;
         }
-        catch
-        {
-            SuperController.LogMessage("This character doesn't have a penis");
-        }
+
+        _penisMid = _maleAtom.freeControllers.First(fc => fc.name == "penisMidControl");
+        _penisTip = _maleAtom.freeControllers.First(fc => fc.name == "penisTipControl");
+        _malePelvisControl = _maleAtom.freeControllers.First(fc => fc.name == "pelvisControl");
+        _malePelvis = _maleAtom.rigidbodies.First(rb => rb.name == "pelvis");
+        _maleHipControl = _maleAtom.freeControllers.First(fc => fc.name == "hipControl");
+        _gen1 = _maleAtom.rigidbodies.First(rb => rb.name == "Gen1");
+        _gen2 = _maleAtom.rigidbodies.First(rb => rb.name == "Gen2");
+        _gen3 = _maleAtom.rigidbodies.First(rb => rb.name == "Gen3");
     }
 
     protected void SyncAtomChoices()
