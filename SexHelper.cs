@@ -135,17 +135,18 @@ public class SexHelper : MVRScript
 
             // Male Atom selector popup
             RegisterStringChooser(_maleAtomJSON);
-            SyncAtomChoices();
             UIDynamicPopup dp = CreateScrollablePopup(_maleAtomJSON, false);
             dp.popupPanelHeight = 500f;
             dp.popup.onOpenPopupHandlers += SyncAtomChoices;
 
             // Female Atom selector popup
             RegisterStringChooser(_femaleAtomJSON);
-            SyncAtomChoices();
             dp = CreateScrollablePopup(_femaleAtomJSON, false);
             dp.popupPanelHeight = 500f;
             dp.popup.onOpenPopupHandlers += SyncAtomChoices;
+
+            SyncAtomChoices();
+            SetDefaultAtomValues();
 
             // Toggles
             text = CreateTextField(new JSONStorableString("text", "<b>\nToggle Features</b>"), true);
@@ -575,6 +576,33 @@ public class SexHelper : MVRScript
     private bool IsAtomMale(Atom atom)
     {
         return atom.GetComponentInChildren<DAZCharacter>().isMale;
+    }
+
+    void SetDefaultAtomValues()
+    {
+        //only on initial plugin add; not during scene reloads
+        if (! SuperController.singleton.isLoading)
+        {
+            if (_femaleAtomJSON.val == null)
+            {
+                //use containing atom if female, otherwise first female atom
+
+                if (! IsAtomMale(containingAtom))
+                {
+                    _femaleAtomJSON.val = containingAtom.name;
+                }
+                else
+                {
+                    _femaleAtomJSON.val = FemaleAtoms.First().name;
+                }
+            }
+            
+            if (_maleAtomJSON.val == null)
+            {
+                //use first male atom
+                _maleAtomJSON.val = MaleAtoms.First().name;
+            }
+        }
     }
 }
 
