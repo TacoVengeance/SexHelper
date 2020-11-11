@@ -57,6 +57,7 @@ public class SexHelper : MVRScript
 
     public JSONStorableStringChooser _easingJSON;
     public Func<float, float> easing;
+    private static string DefaultEasing = "Sinusoidal Out";
 
     // Variables
     private bool _activeThrust = false;
@@ -94,12 +95,12 @@ public class SexHelper : MVRScript
 
             // Easing Setup
             Easing.SetEasingChoices();
-            _easingJSON = new JSONStorableStringChooser("Easing Choice", Easing.easingChoicesList, "Linear", "Select Motion Easing", SetEasing)
+            _easingJSON = new JSONStorableStringChooser("Easing Choice", Easing.easingChoicesList, DefaultEasing, "Select Motion Easing", SetEasing)
             {
                 storeType = JSONStorableParam.StoreType.Full,
-                val = "Linear"
+                val = DefaultEasing
             };
-            SetEasing("Linear");
+            SetEasing(DefaultEasing);
             RegisterStringChooser(_easingJSON);
 
             //Atom choices setup
