@@ -87,11 +87,17 @@ public class SexHelper : MVRScript
     private Vector3 _hipResetPosition;
     private Quaternion _hipResetRotation;
 
+    private bool deferMaleAlign = false;
+    private bool deferMaleThrust = false;
+    private bool deferFemaleThrust = false;
+
     public override void Init()
     {
         try
         {
             SuperController.LogMessage($"{nameof(SexHelper)} initialized");
+
+            SuperController.singleton.onSceneLoadedHandlers += ProcessDeferredCallbacks;
 
             // Easing Setup
             Easing.SetEasingChoices();
@@ -286,6 +292,18 @@ public class SexHelper : MVRScript
         }
     }
 
+    void OnDestroy()
+    {
+        SuperController.singleton.onSceneLoadedHandlers -= ProcessDeferredCallbacks;
+    }
+
+    void ProcessDeferredCallbacks()
+    {
+        if (deferMaleAlign)    _maleAlignEnabledJSON.val = true;
+        if (deferMaleThrust)   _maleThrustEnabledJSON.val = true;
+        if (deferFemaleThrust) _femaleThrustEnabledJSON.val = true;
+    }
+
     // FixedUpdate is called with each physics simulation frame by Unity
     void FixedUpdate()
     {
@@ -425,6 +443,14 @@ public class SexHelper : MVRScript
 
     private void StartMaleAlign(bool isChecked)
     {
+        if (SuperController.singleton.isLoading && isChecked)
+        {
+            //even though scene JSON says this should be checked, don't check it yet; male/female Atoms haven't had the values read in yet
+            _maleAlignEnabledJSON.valNoCallback = false;
+            deferMaleAlign = true;
+            return;
+        }
+
         if (isChecked)
         {
             _penisBase.currentRotationState = FreeControllerV3.RotationState.On;
@@ -438,8 +464,17 @@ public class SexHelper : MVRScript
             _penisTip.currentRotationState = FreeControllerV3.RotationState.Off;
         }
     }
+
     private void StartMaleThrust(bool isChecked)
     {
+        if (SuperController.singleton.isLoading && isChecked)
+        {
+            //even though scene JSON says this should be checked, don't check it yet; male/female Atoms haven't had the values read in yet
+            _maleThrustEnabledJSON.valNoCallback = false;
+            deferMaleThrust = true;
+            return;
+        }
+
         if (isChecked)
         {
             _lerpTime = _durationJSON.val;
@@ -457,6 +492,14 @@ public class SexHelper : MVRScript
 
     private void StartFemaleThrust(bool isChecked)
     {
+        if (SuperController.singleton.isLoading && isChecked)
+        {
+            //even though scene JSON says this should be checked, don't check it yet; male/female Atoms haven't had the values read in yet
+            _femaleThrustEnabledJSON.valNoCallback = false;
+            deferFemaleThrust = true;
+            return;
+        }
+
         if (isChecked)
         {
             _lerpTime = _durationJSON.val;
